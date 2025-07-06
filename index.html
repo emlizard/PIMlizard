@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIM & Harmonics Frequency Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .results-section {
+            padding: 30px;
+            display: none;
+        }
+
+        .results-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .pim-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .pim-table th {
+            background: linear-gradient(45deg, #34495e, #2c3e50);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .pim-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .pim-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .pim-table tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: white;
+        }
+
+        .type-harmonic { background-color: #27ae60; }
+        .type-im3 { background-color: #e74c3c; }
+        .type-im5 { background-color: #f39c12; }
+        .type-im7 { background-color: #8e44ad; }
+
+        .frequency {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Passive Intermodulation & Harmonics Frequency Calculator</h1>
+            <p>Passive Intermodulation(IM3, IM5, IM7) & Harmonics Frequency</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="freq1">Frequency 1 (GHz)</label>
+                    <input type="number" id="freq1" step="0.001" placeholder="예: 1.8" />
+                </div>
+                <div class="input-group">
+                    <label for="freq2">Frequency 2 (GHz)</label>
+                    <input type="number" id="freq2" step="0.001" placeholder="예: 1.9" />
+                </div>
+            </div>
+            <button class="calculate-btn" onclick="calculatePIM()">PIM & Harmonics Frequency Calculator</button>
+        </div>
+
+        <div class="results-section" id="results">
+            <h2 class="results-title">PIM & Harmoncis Frequencies</h2>
+            <table class="pim-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Formular</th>
+                        <th>Frequency (GHz)</th>
+
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function calculatePIM() {
+            const f1 = parseFloat(document.getElementById('freq1').value);
+            const f2 = parseFloat(document.getElementById('freq2').value);
+
+            if (!f1 || !f2) {
+                alert('두 주파수를 모두 입력해주세요.');
+                return;
+            }
+
+            if (f1 <= 0 || f2 <= 0) {
+                alert('주파수는 양수여야 합니다.');
+                return;
+            }
+
+            const products = [];
+
+            // 하모닉 주파수 (2차~5차)
+            for (let n = 2; n <= 5; n++) {
+                products.push({
+                    type: 'Harmonic',
+                    order: n,
+                    formula: `${n}×f1`,
+                    frequency: n * f1
+                });
+                products.push({
+                    type: 'Harmonic',
+                    order: n,
+                    formula: `${n}×f2`,
+                    frequency: n * f2
+                });
+            }
+
+            // IM3 (3차 상호변조 제품)
+            products.push({
+                type: 'IM3',
+                order: 3,
+                formula: `2×f1 - f2`,
+                frequency: Math.abs(2 * f1 - f2)
+            });
+            products.push({
+                type: 'IM3',
+                order: 3,
+                formula: `2×f2 - f1`,
+                frequency: Math.abs(2 * f2 - f1)
+            });
+            products.push({
+                type: 'IM3',
+                order: 3,
+                formula: `2×f1 + f2`,
+                frequency: 2 * f1 + f2
+            });
+            products.push({
+                type: 'IM3',
+                order: 3,
+                formula: `2×f2 + f1`,
+                frequency: 2 * f2 + f1
+            });
+
+            // IM5 (5차 상호변조 제품)
+            products.push({
+                type: 'IM5',
+                order: 5,
+                formula: `3×f1 - 2×f2`,
+                frequency: Math.abs(3 * f1 - 2 * f2)
+            });
+            products.push({
+                type: 'IM5',
+                order: 5,
+                formula: `3×f2 - 2×f1`,
+                frequency: Math.abs(3 * f2 - 2 * f1)
+            });
+            products.push({
+                type: 'IM5',
+                order: 5,
+                formula: `3×f1 + 2×f2`,
+                frequency: 3 * f1 + 2 * f2
+            });
+            products.push({
+                type: 'IM5',
+                order: 5,
+                formula: `3×f2 + 2×f1`,
+                frequency: 3 * f2 + 2 * f1
+            });
+
+            // IM7 (7차 상호변조 제품)
+            products.push({
+                type: 'IM7',
+                order: 7,
+                formula: `4×f1 - 3×f2`,
+                frequency: Math.abs(4 * f1 - 3 * f2)
+            });
+            products.push({
+                type: 'IM7',
+                order: 7,
+                formula: `4×f2 - 3×f1`,
+                frequency: Math.abs(4 * f2 - 3 * f1)
+            });
+            products.push({
+                type: 'IM7',
+                order: 7,
+                formula: `4×f1 + 3×f2`,
+                frequency: 4 * f1 + 3 * f2
+            });
+            products.push({
+                type: 'IM7',
+                order: 7,
+                formula: `4×f2 + 3×f1`,
+                frequency: 4 * f2 + 3 * f1
+            });
+
+            // 주파수가 0이 아닌 것들만 필터링하고 정렬
+            const validProducts = products
+                .filter(product => product.frequency > 0.001)
+                .sort((a, b) => a.frequency - b.frequency);
+
+            displayResults(validProducts);
+        }
+
+        function displayResults(products) {
+            const resultsBody = document.getElementById('resultsBody');
+            const resultsSection = document.getElementById('results');
+
+            resultsBody.innerHTML = '';
+
+            products.forEach(product => {
+                const row = resultsBody.insertRow();
+                
+                const typeCell = row.insertCell(0);
+                typeCell.innerHTML = `<span class="type-badge type-${product.type.toLowerCase()}">${product.type}</span>`;
+                
+                const formulaCell = row.insertCell(1);
+                formulaCell.textContent = product.formula;
+                
+                const freqGHzCell = row.insertCell(2);
+                freqGHzCell.innerHTML = `<span class="frequency">${product.frequency.toFixed(3)}</span>`;
+                
+
+            });
+
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Enter 키로 계산 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        calculatePIM();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
